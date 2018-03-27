@@ -27,13 +27,13 @@ int test1()
 
 	volatile long long value = 0;
 	volatile long long * ptr_value = &value;
-   gx::shared_mutex m;
+	gx::shared_mutex m;
 
 	auto thread1 = [&]
 	{
 		for (uint32_t i = 0; i < LOOPS; i++)
 		{
-         gx::shared_lock l(m);
+			gx::shared_lock l(m);
 			l.upgrade_to_exclusive();
 			ptr_value = nullptr;
 			rand_wait();
@@ -74,8 +74,8 @@ int test1()
 	{
 		for (uint32_t i = 0; i < LOOPS; i++)
 		{
-			//at::shareable_lock_template<at::shared_lock_t> l(m);
-         gx::shareable_lock l(m, gx::shared);
+			//gx::shareable_lock_template<at::shared_lock_t> l(m);
+			gx::shareable_lock l(m, gx::shared);
 			volatile long long intvalue = 0;
 			for (uint32_t i = 0; i < 1000; i++)
 			{
