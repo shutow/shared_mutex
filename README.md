@@ -15,36 +15,31 @@ See the tests for examples.
 ```c++
   gx::shared_mutex m;
   // ...
-	// thread1
+  // thread1
 	{
-			gx::shared_lock l(m);
-			// do shareable work
-			l.upgrade_to_exclusive();
-			// do exclusive work
-			l.downgrade_to_shared();
-      // do shareable work
-		}
-	};
+		gx::shared_lock l(m);
+		// do shareable work
+		l.upgrade_to_exclusive();
+		// do exclusive work
+		l.downgrade_to_shared();
+    // do shareable work
+  }
   // ...
-	// thread2
-	{
-		for (uint32_t i = 0; i < LOOPS; i++)
-		{
-			gx::exclusive_lock l(m);
-			// do exclusive work
-			l.downgrade_to_shared();
-			// do shareable work
-			l.upgrade_to_exclusive();
-			// do exclusive work
-		}
-	};
+  // thread2
+  {
+    gx::exclusive_lock l(m);
+    // do exclusive work
+    l.downgrade_to_shared();
+		// do shareable work
+		l.upgrade_to_exclusive();
+		// do exclusive work
+  }
   // ...
-	// thread3
-	{
-			gx::shareable_lock l(m, gx::shared);
-			// do shareable work
-			l.upgrade_to_exclusive();
-			// do exclusive work
-		}
-	};
+  // thread3
+  {
+    gx::shareable_lock l(m, gx::shared);
+    // do shareable work
+    l.upgrade_to_exclusive();
+    // do exclusive work
+  }
 ```
