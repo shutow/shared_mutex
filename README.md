@@ -4,9 +4,11 @@
 Overview
 --------
 A super-quick non-locking shareable mutex with ability to promote a lock from shared mode to exclusive mode and back.
-Written in `C++` with `<atomic>` library to achieve what is missing in both `std` and `boost` `shared_mutex` / `shared_lock`.
+Written in `C++` with `<atomic>` library including memory ordering  `memory_order_release` to achieve what is missing in both `std` and `boost` `shared_mutex` / `shared_lock`.
 
 You can create `shared_lock` or `exclusive_lock` and then upgrade / downgrade it with `upgrade_to_exclusive()` and `downgrade_to_shared()` methods.
+
+Basically, it implements multiple readers / one writer concept where any of the threads can be promoted to writer (and go back to reader) at any time.
 
 Also, there are three waiting strategies: `burn` - cycles the cpu, `wait` - sleeps for some given time, `yield` - switchs to another thread.
 
