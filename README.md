@@ -10,7 +10,7 @@ You can create `shared_lock` or `exclusive_lock` and then upgrade / downgrade it
 
 Basically, it implements multiple readers / one writer concept where any of the threads can be promoted to writer (and go back to reader) at any time.
 
-Also, there are three waiting strategies: `burn` - cycles the cpu, `wait` - sleeps for some given time, `yield` - switchs to another thread.
+Also, there are three waiting strategies: `burn` - cycles the cpu, `wait` - sleeps for some given time, `yield` - switches to another thread.
 
 See the tests for examples. 
 
