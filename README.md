@@ -1,4 +1,4 @@
-`shared_mutex` than can
+`shared_mutex` that can
 =======================
 
 Overview
