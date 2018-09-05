@@ -123,7 +123,7 @@ namespace gx
 	{
 	};
 
-	template <typename T = at::shared_lock_t>
+	template <typename T = gx::shared_lock_t>
 	class shareable_lock_template
 	{
 	private:

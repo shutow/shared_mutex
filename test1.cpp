@@ -74,7 +74,7 @@ int test1()
 	{
 		for (uint32_t i = 0; i < LOOPS; i++)
 		{
-			//gx::shareable_lock_template<at::shared_lock_t> l(m);
+			//gx::shareable_lock_template<gx::shared_lock_t> l(m);
 			gx::shareable_lock l(m, gx::shared);
 			volatile long long intvalue = 0;
 			for (uint32_t i = 0; i < 1000; i++)
