@@ -6,7 +6,7 @@
 
 namespace gx
 {
-	enum lock_mode { shared, exclusive };
+	enum class lock_mode { shared, exclusive };
 
 	class shared_mutex
 	{

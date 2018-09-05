@@ -9,3 +9,5 @@
 *.opendb
 *.db
 *.suo
+*.ilk
+*.idb

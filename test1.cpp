@@ -74,8 +74,7 @@ int test1()
 	{
 		for (uint32_t i = 0; i < LOOPS; i++)
 		{
-			//gx::shareable_lock_template<gx::shared_lock_t> l(m);
-			gx::shareable_lock l(m, gx::shared);
+			gx::shareable_lock l(m, gx::lock_mode::shared); // or gx::shareable_lock_template<gx::shared_lock_t> l(m);
 			volatile long long intvalue = 0;
 			for (uint32_t i = 0; i < 1000; i++)
 			{
@@ -90,7 +89,7 @@ int test1()
 	};
 
 	sprintf(output, "starting %i x 3 threads with %i loops\n", THREADS, LOOPS);
-	printf(output);
+	printf("%s", output);
 
 	auto timeMark1 = std::chrono::high_resolution_clock::now();
 

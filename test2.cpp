@@ -8,8 +8,6 @@
 #include <thread>
 #include <random>
 
-using namespace std;
-
 namespace
 {
 	class Test {
@@ -19,7 +17,7 @@ namespace
 		{
 		}
 
-		int getrand() { return uniform_dist(engine); }
+		uint32_t getrand() { return uniform_dist(engine); }
 
 		bool test()
 		{
@@ -33,7 +31,7 @@ namespace
 				if (it == m_cache.end())
 				{
 					auto ret = m_cache.emplace(std::make_pair(number, std::vector<uint32_t>()));
-					for (int i = 0; i < number; ++i) ret.first->second.push_back(number);
+					for (uint32_t i = 0; i < number; ++i) ret.first->second.push_back(number);
 					it = ret.first;
 				}
 				l.downgrade_to_shared();
@@ -58,9 +56,9 @@ namespace
 		}
 	private:
 		std::default_random_engine engine;
-		std::uniform_int_distribution<int> uniform_dist;
+		std::uniform_int_distribution<uint32_t> uniform_dist;
 
-		std::unordered_map<int, std::vector<uint32_t>> m_cache;
+		std::unordered_map<uint32_t, std::vector<uint32_t>> m_cache;
 		gx::shared_mutex m_cache_mutex;
 	};
 }
@@ -71,9 +69,10 @@ int test2()
 	printf("collision detection\n");
 
 	Test t;
-	vector<bool> rv(1000000, true);
-	vector<thread> th;
-	std::atomic<int> count = 0;
+	std::vector<bool> rv(1000000, true);
+	std::vector<std::thread> th;
+	std::atomic<int> count;
+	count = 0;
 	const int numthreads = 12;
 	for (int i = 0; i < numthreads; ++i)
 	{
@@ -98,8 +97,8 @@ int test2()
 		}
 	}
 	if (res != 0)
-		cout << "A collision between reading and writing threads had occured." << endl;
+		std::cout << "A collision between reading and writing threads had occured." << std::endl;
 	else
-		cout << "All went OK." << endl;
+		std::cout << "All went OK." << std::endl;
 	return res;
 }
