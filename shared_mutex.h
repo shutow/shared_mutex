@@ -12,9 +12,9 @@ namespace gx
 	{
 	public:
 		enum strategy { yield, wait, burn };
-		shared_mutex(strategy strategy = yield, uint64_t delay_microseconds = 100)
+		shared_mutex(strategy strategy = yield, uint64_t wait_microseconds = 100)
 			: m_strategy(strategy)
-			, m_delay_microseconds(delay_microseconds)
+			, m_wait_microseconds(wait_microseconds)
 			, m_priority_exclusive(false)
 			, m_exclusive(false)
 			, m_counter(0)
@@ -27,34 +27,34 @@ namespace gx
 		{
 			while (true)
 			{
-				m_counter.fetch_add(1);
-				if (m_exclusive.load())
-					m_counter.fetch_sub(1);
+				m_counter.fetch_add(1, std::memory_order_acq_rel);
+				if (m_exclusive.load(std::memory_order_acquire))
+					m_counter.fetch_sub(1, std::memory_order_acq_rel);
 				else
 					break;
-				while (m_exclusive.load()) delay();
+				while (m_exclusive.load(std::memory_order_acquire)) delay();
 			}
 		}
 		void unlock_shared()
 		{
-			m_counter.fetch_sub(1, std::memory_order_release);
+			m_counter.fetch_sub(1, std::memory_order_acq_rel);
 		}
 		void lock()
 		{
 			bool expected = false;
-			while (!m_exclusive.compare_exchange_strong(expected, true))
+			while (!m_exclusive.compare_exchange_weak(expected, true, std::memory_order_acq_rel, std::memory_order_acquire))
 			{
 				delay();
 				expected = false;
 			}
-			while (m_counter.load() > 0) delay();
+			while (m_counter.load(std::memory_order_acquire) > 0) delay();
 		}
 		void unlock()
 		{
-			if (m_priority_exclusive.load() > 0)
+			if (m_priority_exclusive.load(std::memory_order_acquire) > 0)
 			{
-				m_priority_exclusive.fetch_sub(1, std::memory_order_release);
-				m_counter.fetch_sub(1, std::memory_order_release);
+				m_priority_exclusive.fetch_sub(1, std::memory_order_acq_rel);
+				m_counter.fetch_sub(1, std::memory_order_acq_rel);
 			}
 			else
 				m_exclusive.store(false, std::memory_order_release);
@@ -62,34 +62,34 @@ namespace gx
 		void unlock_shared_and_lock()
 		{
 			bool expected = false;
-			if (m_exclusive.compare_exchange_strong(expected, true))
+			if (m_exclusive.compare_exchange_weak(expected, true, std::memory_order_acq_rel, std::memory_order_acquire))
 			{
-				m_counter.fetch_sub(1, std::memory_order_release);
-				while (m_counter.load() > 0) delay();
+				m_counter.fetch_sub(1, std::memory_order_acq_rel);
+				while (m_counter.load(std::memory_order_acquire) > 0) delay();
 			}
 			else // if some thread is claimed m_exclusive already and waits for m_counter == 0
 			{
-				int64_t num = m_priority_exclusive.fetch_add(1) + 1;
-				while (m_counter.load() > num) delay();
+				int64_t num = m_priority_exclusive.fetch_add(1, std::memory_order_acq_rel) + 1;
+				while (m_counter.load(std::memory_order_acquire) > num) delay();
 			}
 		}
 		void unlock_and_lock_shared()
 		{
-			if (m_priority_exclusive.load() > 0)
+			if (m_priority_exclusive.load(std::memory_order_acquire) > 0)
 			{
-				m_priority_exclusive.fetch_sub(1, std::memory_order_release);
+				m_priority_exclusive.fetch_sub(1, std::memory_order_acq_rel);
 			}
 			else
 			{
-				m_counter.fetch_add(1);
+				m_counter.fetch_add(1, std::memory_order_acq_rel);
 				m_exclusive.store(false, std::memory_order_release);
 			}
 		}
 		lock_mode mode() const
 		{
-			if (m_exclusive)
+			if (m_exclusive.load(std::memory_order_acquire))
 				return lock_mode::exclusive;
-			if (m_counter)
+			if (m_counter.load(std::memory_order_acquire))
 				return lock_mode::shared;
 			return lock_mode(0xFFFF);
 		}
@@ -99,11 +99,11 @@ namespace gx
 			if (m_strategy == yield)
 				std::this_thread::yield();
 			else if (m_strategy == wait)
-				std::this_thread::sleep_for(std::chrono::duration<uint64_t, std::micro>(m_delay_microseconds));
+				std::this_thread::sleep_for(std::chrono::duration<uint64_t, std::micro>(m_wait_microseconds));
 		}
 	private:
 		strategy m_strategy;
-		uint64_t m_delay_microseconds;
+		uint64_t m_wait_microseconds;
 		std::atomic<int64_t> m_priority_exclusive;
 		std::atomic<bool> m_exclusive;
 		std::atomic<int64_t> m_counter;

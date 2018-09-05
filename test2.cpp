@@ -67,6 +67,9 @@ namespace
 
 int test2()
 {
+	printf("test 2:\n");
+	printf("collision detection\n");
+
 	Test t;
 	vector<bool> rv(1000000, true);
 	vector<thread> th;
@@ -95,7 +98,7 @@ int test2()
 		}
 	}
 	if (res != 0)
-		cout << "A clash between reading and writing threads had occured." << endl;
+		cout << "A collision between reading and writing threads had occured." << endl;
 	else
 		cout << "All went OK." << endl;
 	return res;

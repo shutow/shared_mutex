@@ -21,13 +21,13 @@ int test1()
 {
 	char output[1024];
 
-	auto timeMark1 = std::chrono::high_resolution_clock::now();
-
-	printf("using at::shared_mutex\n");
+	printf("test 1:\n");
+	printf("using gx::shared_mutex in multiple readers / multiple writers mode\n");
 
 	volatile long long value = 0;
 	volatile long long * ptr_value = &value;
-	gx::shared_mutex m;
+
+	gx::shared_mutex m(gx::shared_mutex::yield); // yield is the default and seemingly the best mode
 
 	auto thread1 = [&]
 	{
@@ -89,15 +89,22 @@ int test1()
 		}
 	};
 
-	sprintf(output, "starting %i threads with %i loops\n", THREADS, LOOPS);
+	sprintf(output, "starting %i x 3 threads with %i loops\n", THREADS, LOOPS);
 	printf(output);
+
+	auto timeMark1 = std::chrono::high_resolution_clock::now();
+
 	std::list<std::thread> insert_threads;
 	for (auto i = 0; i < THREADS; ++i) insert_threads.emplace_back(std::thread(thread1));
 	for (auto i = 0; i < THREADS; ++i) insert_threads.emplace_back(std::thread(thread2));
 	for (auto i = 0; i < THREADS; ++i) insert_threads.emplace_back(std::thread(thread3));
 
+	printf("wait for threads to end\n");
 	for (auto& t : insert_threads) t.join();
-	printf("joining threads\n");
+
+	auto timeMark2 = std::chrono::high_resolution_clock::now();
+	std::cout << "execution took " << std::chrono::duration_cast<std::chrono::milliseconds>(timeMark2 - timeMark1).count() << " milliseconds\n\n";
+
 	insert_threads.clear();
 
 	return 0;
