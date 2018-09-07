@@ -11,3 +11,6 @@
 *.suo
 *.ilk
 *.idb
+*.o
+*.bz2
+obj/__setup_obj_dir
